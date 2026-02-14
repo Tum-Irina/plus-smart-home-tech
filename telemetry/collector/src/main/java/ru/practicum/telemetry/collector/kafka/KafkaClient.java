@@ -2,6 +2,7 @@ package ru.practicum.telemetry.collector.kafka;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,8 +15,7 @@ import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 @RequiredArgsConstructor
 public class KafkaClient {
 
-    private final KafkaProducer<String, SensorEventAvro> sensorEventProducer;
-    private final KafkaProducer<String, HubEventAvro> hubEventProducer;
+    private final KafkaProducer<String, SpecificRecordBase> kafkaProducer;
 
     @Value("${topics.sensors:telemetry.sensors.v1}")
     private String sensorsTopic;
@@ -25,38 +25,33 @@ public class KafkaClient {
 
     public void sendSensorEvent(SensorEventAvro event) {
         String key = event.getId();
-        ProducerRecord<String, SensorEventAvro> record =
-                new ProducerRecord<>(sensorsTopic, key, event);
+        long timestampMs = event.getTimestamp().toEpochMilli();
+        ProducerRecord<String, SpecificRecordBase> record =
+                new ProducerRecord<>(sensorsTopic, null, timestampMs, key, event);
 
-        sensorEventProducer.send(record, (metadata, exception) -> {
-            if (exception != null) {
-                log.error("Ошибка отправки события датчика {} в Kafka: {}",
-                        key, exception.getMessage(), exception);
-            } else {
-                log.debug("Событие датчика {} отправлено в топик {}, partition {}, offset {}",
-                        key, metadata.topic(), metadata.partition(), metadata.offset());
-            }
-        });
+        send(record);
     }
 
     public void sendHubEvent(HubEventAvro event) {
         String key = event.getHubId();
-        ProducerRecord<String, HubEventAvro> record =
-                new ProducerRecord<>(hubsTopic, key, event);
+        long timestampMs = event.getTimestamp().toEpochMilli();
+        ProducerRecord<String, SpecificRecordBase> record =
+                new ProducerRecord<>(hubsTopic, null, timestampMs, key, event);
+        send(record);
+    }
 
-        hubEventProducer.send(record, (metadata, exception) -> {
+    private void send(ProducerRecord<String, SpecificRecordBase> record) {
+        kafkaProducer.send(record, (metadata, exception) -> {
             if (exception != null) {
-                log.error("Ошибка отправки события хаба {} в Kafka: {}",
-                        key, exception.getMessage(), exception);
+                log.error("Ошибка отправки в Kafka: {}", exception.getMessage(), exception);
             } else {
-                log.debug("Событие хаба {} отправлено в топик {}, partition {}, offset {}",
-                        key, metadata.topic(), metadata.partition(), metadata.offset());
+                log.debug("Отправлено в топик {}, partition {}, offset {}, timestamp {}",
+                        metadata.topic(), metadata.partition(), metadata.offset(), record.timestamp());
             }
         });
     }
 
     public void flush() {
-        sensorEventProducer.flush();
-        hubEventProducer.flush();
+        kafkaProducer.flush();
     }
 }
