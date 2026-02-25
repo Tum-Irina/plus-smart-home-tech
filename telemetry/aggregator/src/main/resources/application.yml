@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: aggregator
+  kafka:
+    bootstrap-servers: localhost:9092
+
+topics:
+  snapshots: telemetry.snapshots.v1
+
+logging:
+  level:
+    ru.practicum.telemetry.aggregator: DEBUG
+    org.apache.kafka: WARN
+
+server:
+  port: 0
