@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: analyzer
+  kafka:
+    bootstrap-servers: localhost:9092
+  datasource:
+    url: jdbc:postgresql://localhost:5432/analyzer
+    username: analyzer
+    password: analyzer
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+
+grpc:
+  client:
+    hub-router:
+      address: 'static://localhost:59090'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+
+logging:
+  level:
+    ru.practicum.telemetry.analyzer: DEBUG
+    org.apache.kafka: WARN
+    org.hibernate.SQL: WARN
+
+server:
+  port: 0
