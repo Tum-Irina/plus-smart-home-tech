@@ -1,5 +1,6 @@
 package ru.practicum.telemetry.aggregator.serialization;
 
+import ru.practicum.kafka.serializer.BaseAvroDeserializer;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 public class SensorEventDeserializer extends BaseAvroDeserializer<SensorEventAvro> {

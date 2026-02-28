@@ -1,4 +1,4 @@
-package ru.practicum.telemetry.aggregator.serialization;
+package ru.practicum.kafka.serializer;
 
 import org.apache.avro.Schema;
 import org.apache.avro.io.BinaryDecoder;
