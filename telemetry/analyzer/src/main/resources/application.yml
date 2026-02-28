@@ -3,6 +3,9 @@ spring:
     name: analyzer
   kafka:
     bootstrap-servers: localhost:9092
+  sql:
+    init:
+      mode: always
   datasource:
     url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:analyzer}
     username: ${POSTGRES_USER:analyzer}
@@ -12,7 +15,7 @@ spring:
       maximum-pool-size: 10
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
