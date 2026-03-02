@@ -7,8 +7,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
+import ru.practicum.telemetry.aggregator.config.KafkaProps;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
@@ -25,27 +26,33 @@ public class AggregationService {
 
     private final Consumer<String, SensorEventAvro> consumer;
     private final KafkaProducer<String, SpecificRecordBase> producer;
-    private final String snapshotTopic;
+    private final KafkaProps kafkaProps;
 
     private final Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
 
     public AggregationService(
             Consumer<String, SensorEventAvro> consumer,
             KafkaProducer<String, SpecificRecordBase> producer,
-            @Value("${topics.snapshots:telemetry.snapshots.v1}") String snapshotTopic
+            KafkaProps kafkaProps
     ) {
         this.consumer = consumer;
         this.producer = producer;
-        this.snapshotTopic = snapshotTopic;
+        this.kafkaProps = kafkaProps;
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("Сработал хук на завершение JVM. Прерываю работу консьюмера.");
+            consumer.wakeup();
+        }));
     }
 
     public void start() {
         try {
-            consumer.subscribe(java.util.List.of("telemetry.sensors.v1"));
-            log.info("Aggregator подписался на топик telemetry.sensors.v1");
+            consumer.subscribe(java.util.List.of(kafkaProps.getSensorsTopic()));
+            log.info("Aggregator подписался на топик {}", kafkaProps.getSensorsTopic());
 
             while (true) {
-                ConsumerRecords<String, SensorEventAvro> records = consumer.poll(Duration.ofMillis(1000));
+                ConsumerRecords<String, SensorEventAvro> records = consumer.poll(
+                        Duration.ofMillis(kafkaProps.getPollTimeoutMs()));
 
                 if (records.isEmpty()) {
                     continue;
@@ -60,19 +67,29 @@ public class AggregationService {
                     if (updatedSnapshot.isPresent()) {
                         SensorsSnapshotAvro snapshot = updatedSnapshot.get();
                         ProducerRecord<String, SpecificRecordBase> producerRecord =
-                                new ProducerRecord<>(snapshotTopic, snapshot.getHubId(), snapshot);
+                                new ProducerRecord<>(kafkaProps.getSnapshotsTopic(), snapshot.getHubId(), snapshot);
                         producer.send(producerRecord);
                         log.info("Снапшот для хаба {} обновлён и отправлен", snapshot.getHubId());
                     }
                 }
 
-                consumer.commitSync();
+                producer.flush();
+                consumer.commitAsync();
             }
 
+        } catch (WakeupException ignored) {
+            log.info("Получен сигнал на завершение работы");
         } catch (Exception e) {
             log.error("Ошибка в работе Aggregator", e);
         } finally {
-            close();
+            try {
+                producer.flush();
+                consumer.commitSync();
+            } finally {
+                consumer.close();
+                producer.close();
+                log.info("Ресурсы Aggregator закрыты");
+            }
         }
     }
 
@@ -117,16 +134,5 @@ public class AggregationService {
 
         log.debug("Состояние обновлено");
         return Optional.of(snapshot);
-    }
-
-    private void close() {
-        try {
-            producer.flush();
-            consumer.commitSync();
-        } finally {
-            consumer.close();
-            producer.close();
-            log.info("Ресурсы Aggregator закрыты");
-        }
     }
 }

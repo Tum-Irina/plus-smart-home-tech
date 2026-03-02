@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
+import ru.practicum.telemetry.analyzer.config.KafkaProps;
 import ru.practicum.telemetry.analyzer.service.ScenarioAnalyzer;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 
@@ -18,15 +20,16 @@ public class SnapshotProcessor {
 
     private final Consumer<String, SensorsSnapshotAvro> consumer;
     private final ScenarioAnalyzer scenarioAnalyzer;
+    private final KafkaProps kafkaProps;
 
     public void start() {
         try {
-            consumer.subscribe(java.util.List.of("telemetry.snapshots.v1"));
-            log.info("SnapshotProcessor подписался на топик telemetry.snapshots.v1");
+            consumer.subscribe(java.util.List.of(kafkaProps.getSnapshotsTopic()));
+            log.info("SnapshotProcessor подписался на топик {}", kafkaProps.getSnapshotsTopic());
 
             while (true) {
                 ConsumerRecords<String, SensorsSnapshotAvro> records =
-                        consumer.poll(Duration.ofMillis(1000));
+                        consumer.poll(Duration.ofMillis(kafkaProps.getPollTimeoutMs()));
 
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
                     SensorsSnapshotAvro snapshot = record.value();
@@ -35,12 +38,16 @@ public class SnapshotProcessor {
                     scenarioAnalyzer.analyze(snapshot);
                 }
 
-                consumer.commitSync();
+                consumer.commitAsync();
             }
+        } catch (WakeupException ignored) {
+            log.info("SnapshotProcessor получил сигнал на завершение");
         } catch (Exception e) {
             log.error("Ошибка в SnapshotProcessor", e);
         } finally {
+            consumer.commitSync();
             consumer.close();
+            log.info("SnapshotProcessor закрыт");
         }
     }
 }
