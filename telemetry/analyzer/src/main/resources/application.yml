@@ -31,11 +31,13 @@ analyzer:
     snapshot-consumer:
       key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value.deserializer: ru.practicum.telemetry.analyzer.serialization.SensorsSnapshotDeserializer
+      group.id: analyzer-snapshot-group
       enable.auto.commit: false
       auto.offset.reset: earliest
     hub-consumer:
       key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value.deserializer: ru.practicum.telemetry.analyzer.serialization.HubEventDeserializer
+      group.id: analyzer-hub-group
       enable.auto.commit: false
       auto.offset.reset: earliest
 
