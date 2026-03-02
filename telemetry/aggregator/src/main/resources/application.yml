@@ -17,7 +17,7 @@ aggregator:
       auto.offset.reset: earliest
     producer:
       key.serializer: org.apache.kafka.common.serialization.StringSerializer
-      value.serializer: ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
+      value.serializer: ru.practicum.kafka.serializer.GeneralAvroSerializer
       acks: all
       retries: 3
       enable.idempotence: true
