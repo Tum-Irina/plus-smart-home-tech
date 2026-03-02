@@ -29,15 +29,15 @@ analyzer:
     hubs-topic: telemetry.hubs.v1
     poll-timeout-ms: 1000
     snapshot-consumer:
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: ru.practicum.telemetry.analyzer.serialization.SensorsSnapshotDeserializer
-      enable-auto-commit: false
-      auto-offset-reset: earliest
+      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer: ru.practicum.telemetry.analyzer.serialization.SensorsSnapshotDeserializer
+      enable.auto.commit: false
+      auto.offset.reset: earliest
     hub-consumer:
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: ru.practicum.telemetry.analyzer.serialization.HubEventDeserializer
-      enable-auto-commit: false
-      auto-offset-reset: earliest
+      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer: ru.practicum.telemetry.analyzer.serialization.HubEventDeserializer
+      enable.auto.commit: false
+      auto.offset.reset: earliest
 
 grpc:
   client:
