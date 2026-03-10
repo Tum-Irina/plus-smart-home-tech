@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: aggregator
+  kafka:
+    bootstrap-servers: localhost:9092
+
+aggregator:
+  kafka:
+    bootstrap-servers: ${spring.kafka.bootstrap-servers:localhost:9092}
+    sensors-topic: telemetry.sensors.v1
+    snapshots-topic: telemetry.snapshots.v1
+    poll-timeout-ms: 1000
+    consumer:
+      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer: ru.practicum.telemetry.aggregator.serialization.SensorEventDeserializer
+      group.id: aggregator-group
+      enable.auto.commit: false
+      auto.offset.reset: earliest
+    producer:
+      key.serializer: org.apache.kafka.common.serialization.StringSerializer
+      value.serializer: ru.practicum.kafka.serializer.GeneralAvroSerializer
+      acks: all
+      retries: 3
+      enable.idempotence: true
+
+logging:
+  level:
+    ru.practicum.telemetry.aggregator: DEBUG
+    org.apache.kafka: WARN
+
+server:
+  port: 0
