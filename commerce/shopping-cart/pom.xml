@@ -86,7 +86,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.practicum.shoppingcart.ShoppingCartApplication</mainClass>
+                    <mainClass>ru.practicum.shopping.cart.ShoppingCartApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
