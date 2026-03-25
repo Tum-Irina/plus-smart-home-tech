@@ -94,7 +94,6 @@ public class ShoppingStoreService {
     @Transactional
     public ProductDto createNewProduct(ProductDto productDto) {
         Product product = productMapper.toEntity(productDto);
-        product.setProductState(ProductState.ACTIVE);
         product = productRepository.save(product);
         log.info("Создан новый товар: {}", product.getProductName());
         return productMapper.toDto(product);
