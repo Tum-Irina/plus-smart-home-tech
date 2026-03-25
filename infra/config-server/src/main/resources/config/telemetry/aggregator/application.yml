@@ -21,6 +21,19 @@ aggregator:
       retries: 3
       enable.idempotence: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
 logging:
   level:
     ru.practicum.telemetry.aggregator: DEBUG

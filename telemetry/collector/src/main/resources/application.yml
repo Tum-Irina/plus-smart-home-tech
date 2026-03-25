@@ -28,16 +28,3 @@ eureka:
     fetchRegistry: true
   instance:
     prefer-ip-address: true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: always
-  metrics:
-    export:
-      prometheus:
-        enabled: true
