@@ -53,11 +53,7 @@ public class ShoppingStoreService {
         }
 
         Pageable pageable = PageRequest.of(page, size, sortOrder);
-        Page<Product> productPage = productRepository.findByProductCategoryAndProductState(
-                category,
-                ProductState.ACTIVE,
-                pageable
-        );
+        Page<Product> productPage = productRepository.findByProductCategory(category, pageable);
 
         List<SortObject> sortList = sortOrder.get().map(order ->
                 SortObject.builder()
