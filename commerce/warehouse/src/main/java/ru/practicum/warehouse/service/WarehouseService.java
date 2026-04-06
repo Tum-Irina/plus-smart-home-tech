@@ -124,4 +124,81 @@ public class WarehouseService {
                 .flat(selectedAddress)
                 .build();
     }
+
+    @Transactional
+    public BookedProductsDto assemblyProductsForOrder(AssemblyProductsForOrderRequest request) {
+        Map<UUID, Long> products = request.getProducts();
+        double totalWeight = 0.0;
+        double totalVolume = 0.0;
+        boolean hasFragile = false;
+        Map<UUID, Long> insufficientProducts = new HashMap<>();
+
+        for (Map.Entry<UUID, Long> entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            Long requestedQuantity = entry.getValue();
+
+            WarehouseProduct product = repository.findByProductId(productId)
+                    .orElseThrow(() -> new ProductInShoppingCartNotInWarehouse(
+                            "Товар с ID " + productId + " не найден на складе"
+                    ));
+
+            if (product.getQuantity() < requestedQuantity) {
+                insufficientProducts.put(productId, product.getQuantity());
+            }
+
+            totalWeight += product.getWeight() * requestedQuantity;
+
+            Dimension dim = product.getDimension();
+            double volume = dim.getWidth() * dim.getHeight() * dim.getDepth();
+            totalVolume += volume * requestedQuantity;
+
+            if (Boolean.TRUE.equals(product.getFragile())) {
+                hasFragile = true;
+            }
+        }
+
+        if (!insufficientProducts.isEmpty()) {
+            throw new ProductInShoppingCartLowQuantityInWarehouse(
+                    "Недостаточно товаров на складе",
+                    insufficientProducts
+            );
+        }
+
+        for (Map.Entry<UUID, Long> entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            Long requestedQuantity = entry.getValue();
+            WarehouseProduct product = repository.findByProductId(productId).get();
+            product.setQuantity(product.getQuantity() - requestedQuantity);
+            repository.save(product);
+        }
+
+        return BookedProductsDto.builder()
+                .deliveryWeight(totalWeight)
+                .deliveryVolume(totalVolume)
+                .fragile(hasFragile)
+                .build();
+    }
+
+    @Transactional
+    public void shippedToDelivery(ShippedToDeliveryRequest request) {
+
+        log.info("Товары для заказа {} переданы в доставку с ID {}", request.getOrderId(), request.getDeliveryId());
+    }
+
+    @Transactional
+    public void acceptReturn(Map<UUID, Long> products) {
+        for (Map.Entry<UUID, Long> entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            Long quantity = entry.getValue();
+
+            WarehouseProduct product = repository.findByProductId(productId)
+                    .orElseThrow(() -> new NoSpecifiedProductInWarehouseException(
+                            "Товар с ID " + productId + " не найден на складе"
+                    ));
+
+            product.setQuantity(product.getQuantity() + quantity);
+            repository.save(product);
+            log.info("Возврат товара {} в количестве {} на склад", productId, quantity);
+        }
+    }
 }

@@ -16,6 +16,9 @@
         <module>warehouse</module>
         <module>interaction-api</module>
         <module>shopping-store</module>
+        <module>payment</module>
+        <module>delivery</module>
+        <module>order</module>
     </modules>
 
 </project>

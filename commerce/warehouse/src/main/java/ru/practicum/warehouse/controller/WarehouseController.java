@@ -10,6 +10,9 @@ import ru.practicum.warehouse.dto.AddProductToWarehouseRequest;
 import ru.practicum.warehouse.dto.NewProductInWarehouseRequest;
 import ru.practicum.warehouse.service.WarehouseService;
 
+import java.util.Map;
+import java.util.UUID;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -44,5 +47,26 @@ public class WarehouseController {
     public AddressDto getWarehouseAddress() {
         log.info("GET /api/v1/warehouse/address - запрос адреса склада");
         return warehouseService.getWarehouseAddress();
+    }
+
+    @PostMapping("/assembly")
+    public BookedProductsDto assemblyProductsForOrder(@Valid @RequestBody AssemblyProductsForOrderRequest request) {
+        log.info("POST /api/v1/warehouse/assembly - сборка товаров для заказа: {}", request.getOrderId());
+        return warehouseService.assemblyProductsForOrder(request);
+    }
+
+    @PostMapping("/shipped")
+    @ResponseStatus(HttpStatus.OK)
+    public void shippedToDelivery(@Valid @RequestBody ShippedToDeliveryRequest request) {
+        log.info("POST /api/v1/warehouse/shipped - передача в доставку заказа: {}, доставка: {}",
+                request.getOrderId(), request.getDeliveryId());
+        warehouseService.shippedToDelivery(request);
+    }
+
+    @PostMapping("/return")
+    @ResponseStatus(HttpStatus.OK)
+    public void acceptReturn(@RequestBody Map<UUID, Long> products) {
+        log.info("POST /api/v1/warehouse/return - возврат товаров на склад");
+        warehouseService.acceptReturn(products);
     }
 }
