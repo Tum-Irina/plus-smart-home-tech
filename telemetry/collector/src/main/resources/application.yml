@@ -17,9 +17,6 @@ grpc:
   server:
     port: 59091
 
-server:
-  port: 0
-
 eureka:
   client:
     serviceUrl:

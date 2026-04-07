@@ -13,9 +13,6 @@ spring:
         useRandomPolicy: true
         max-interval: 6000
 
-server:
-  port: 0
-
 eureka:
   instance:
     instance-id: ${spring.application.name}:${random.value}

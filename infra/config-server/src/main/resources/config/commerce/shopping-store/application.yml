@@ -16,6 +16,9 @@ spring:
         format_sql: true
     show-sql: false
 
+server:
+  port: 0
+
 management:
   endpoints:
     web:

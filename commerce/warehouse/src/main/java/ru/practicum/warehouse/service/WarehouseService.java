@@ -11,7 +11,9 @@ import ru.practicum.warehouse.dto.NewProductInWarehouseRequest;
 import ru.practicum.warehouse.exception.NoSpecifiedProductInWarehouseException;
 import ru.practicum.warehouse.exception.SpecifiedProductAlreadyInWarehouseException;
 import ru.practicum.warehouse.model.Dimension;
+import ru.practicum.warehouse.model.OrderBooking;
 import ru.practicum.warehouse.model.WarehouseProduct;
+import ru.practicum.warehouse.repository.OrderBookingRepository;
 import ru.practicum.warehouse.repository.WarehouseProductRepository;
 
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import java.util.UUID;
 public class WarehouseService {
 
     private final WarehouseProductRepository repository;
+    private final OrderBookingRepository orderBookingRepository;
 
     @Transactional
     public void addNewProduct(NewProductInWarehouseRequest request) {
@@ -172,6 +175,12 @@ public class WarehouseService {
             repository.save(product);
         }
 
+        OrderBooking booking = OrderBooking.builder()
+                .orderId(request.getOrderId())
+                .status("ASSEMBLED")
+                .build();
+        orderBookingRepository.save(booking);
+
         return BookedProductsDto.builder()
                 .deliveryWeight(totalWeight)
                 .deliveryVolume(totalVolume)
@@ -181,6 +190,15 @@ public class WarehouseService {
 
     @Transactional
     public void shippedToDelivery(ShippedToDeliveryRequest request) {
+        log.info("Передача товаров в доставку для заказа: {}, доставка: {}",
+                request.getOrderId(), request.getDeliveryId());
+
+        OrderBooking booking = orderBookingRepository.findByOrderId(request.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Бронирование для заказа " + request.getOrderId() + " не найдено"));
+
+        booking.setDeliveryId(request.getDeliveryId());
+        booking.setStatus("SHIPPED");
+        orderBookingRepository.save(booking);
 
         log.info("Товары для заказа {} переданы в доставку с ID {}", request.getOrderId(), request.getDeliveryId());
     }

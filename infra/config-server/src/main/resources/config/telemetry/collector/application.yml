@@ -6,6 +6,9 @@ topics:
   sensors: telemetry.sensors.v1
   hubs: telemetry.hubs.v1
 
+server:
+  port: 0
+
 management:
   endpoints:
     web:
