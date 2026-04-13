@@ -21,6 +21,9 @@ aggregator:
       retries: 3
       enable.idempotence: true
 
+server:
+  port: 0
+
 management:
   endpoints:
     web:

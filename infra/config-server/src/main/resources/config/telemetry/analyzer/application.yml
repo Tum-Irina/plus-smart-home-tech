@@ -39,6 +39,9 @@ analyzer:
       enable.auto.commit: false
       auto.offset.reset: earliest
 
+server:
+  port: 0
+
 management:
   endpoints:
     web:

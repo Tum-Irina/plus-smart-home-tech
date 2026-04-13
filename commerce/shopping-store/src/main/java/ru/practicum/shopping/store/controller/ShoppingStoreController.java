@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.interaction.dto.ProductCategory;
+import ru.practicum.interaction.dto.ProductDto;
+import ru.practicum.interaction.dto.QuantityState;
 import ru.practicum.shopping.store.dto.*;
 import ru.practicum.shopping.store.service.ShoppingStoreService;
 

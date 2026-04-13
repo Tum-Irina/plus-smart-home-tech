@@ -1,4 +1,4 @@
-package ru.practicum.shopping.store.exception;
+package ru.practicum.interaction.exception;
 
 public class ProductNotFoundException extends RuntimeException {
     public ProductNotFoundException(String message) {

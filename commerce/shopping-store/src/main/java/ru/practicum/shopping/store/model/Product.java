@@ -5,9 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shopping.store.dto.ProductCategory;
-import ru.practicum.shopping.store.dto.ProductState;
-import ru.practicum.shopping.store.dto.QuantityState;
+import ru.practicum.interaction.dto.ProductCategory;
+import ru.practicum.interaction.dto.ProductState;
+import ru.practicum.interaction.dto.QuantityState;
 
 import java.math.BigDecimal;
 import java.util.UUID;

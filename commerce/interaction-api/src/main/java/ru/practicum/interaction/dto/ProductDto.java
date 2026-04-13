@@ -1,4 +1,4 @@
-package ru.practicum.shopping.store.dto;
+package ru.practicum.interaction.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

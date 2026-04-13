@@ -1,7 +1,7 @@
 package ru.practicum.shopping.store.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.shopping.store.dto.ProductDto;
+import ru.practicum.interaction.dto.ProductDto;
 import ru.practicum.shopping.store.model.Product;
 
 @Component
